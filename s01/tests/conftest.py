@@ -14,6 +14,12 @@ Why a conftest.py rather than removing the guard from main.py?
   the guard. The key value is never sent to Groq because every test mocks main.llm.
 """
 import os
+import sys
+
+# When pytest runs multiple sessions together, 'main' from an earlier session
+# stays in sys.modules. Clear it so this session's test file imports from
+# its own solution/ directory, not a cached one.
+sys.modules.pop("main", None)
 
 os.environ.setdefault("GROQ_API_KEY", "test-key-not-real")
 os.environ.setdefault("LANGSMITH_API_KEY", "test-langsmith-key")

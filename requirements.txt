@@ -6,12 +6,13 @@
 # Each group comment shows which session first uses that package.
 
 # --- Sessions 1-17: Core LangGraph stack ---
-langgraph[checkpoint-sqlite]>=0.2.0    # PRD AC requires this extra; also installs aiosqlite
-aiosqlite>=0.19.0                      # explicit backup -- ensures async SQLite support even if the extra changes
+langgraph>=1.0.0
+langgraph-checkpoint-sqlite>=2.0.0    # SqliteSaver for multi-turn memory (US-02, Session 2)
+aiosqlite>=0.19.0                     # async SQLite support required by langgraph-checkpoint-sqlite
 langchain>=0.3.0
 langchain-core>=0.3.0
 langchain-text-splitters>=0.3.0        # RecursiveCharacterTextSplitter (split from langchain in 0.3)
-langchain-groq>=0.1.9                  # Groq (llama-3.3-70b-versatile) -- the agent LLM
+langchain-groq>=0.1.9                  # Groq (meta-llama/llama-4-scout-17b-16e-instruct) -- the agent LLM
 
 # --- Session 1+: Environment and runtime ---
 python-dotenv>=1.0.0                   # reads .env -- first line of every agent file
@@ -22,7 +23,6 @@ chromadb>=0.5.0
 langchain-chroma>=0.1.4
 langchain-huggingface>=0.0.3           # free local embeddings (all-MiniLM-L6-v2)
 sentence-transformers>=2.7.0           # backing library for HuggingFaceEmbeddings
-langchain-community>=0.2.0             # TextLoader and other document loaders
 
 # --- Session 6+: Evaluation (LLM-as-judge) ---
 openai>=1.0.0                          # GPT-4o-mini as the eval judge (different provider from Groq)

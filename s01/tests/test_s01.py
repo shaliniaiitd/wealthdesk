@@ -25,10 +25,11 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-# Add the solution directory to the path so we can import from it.
-# In a production repo you would use a proper package structure.
-# For a course project, this is the simplest approach that works
-# across Windows, Mac, and Linux without requiring pip install -e .
+# When pytest runs multiple sessions in one command, 'main' from an earlier
+# session stays in sys.modules. Clear it before inserting this session's path
+# so this test file always imports from its own solution/ directory.
+sys.modules.pop("main", None)
+
 SOLUTION_DIR = Path(__file__).parent.parent / "solution"
 sys.path.insert(0, str(SOLUTION_DIR))
 
@@ -40,6 +41,7 @@ from main import (  # noqa: E402  (import after sys.path modification)
     respond,
     build_graph,
 )
+import main as _s01_module  # noqa: E402  (keep a direct reference so patch.object works even when sys.modules["main"] is overwritten by a later session's import)
 
 
 # ---------------------------------------------------------------------------
@@ -54,7 +56,7 @@ def mock_llm_response():
     actual ChatGroq response shape). Every test that calls respond() should
     use this fixture or the 'mock_groq_error' fixture.
     """
-    with patch("main.llm") as mock_llm:
+    with patch.object(_s01_module, "llm") as mock_llm:
         mock_result = MagicMock()
         mock_result.content = "The BNB home loan rate is 8.5% per annum. WealthDesk | Bharat National Bank"
         mock_llm.invoke.return_value = mock_result
@@ -64,7 +66,7 @@ def mock_llm_response():
 @pytest.fixture
 def mock_llm_error():
     """Patch ChatGroq to raise an exception, testing the error-handling path."""
-    with patch("main.llm") as mock_llm:
+    with patch.object(_s01_module, "llm") as mock_llm:
         mock_llm.invoke.side_effect = Exception("Groq API timeout")
         yield mock_llm
 

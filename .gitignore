@@ -5,6 +5,8 @@
 # To release: git add -f s0X/solution/ && git add -f s0X/instructor_notes.md
 s*/solution/
 s*/instructor_notes.md
+s*/CLAUDE_CODE_PROMPTS.md
+prds/
 
 # Generated files -- recreate with seed.py and ingest.py
 data/bnb_data.db

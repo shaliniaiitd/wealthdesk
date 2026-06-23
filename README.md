@@ -128,11 +128,17 @@ wealthdesk/
 ## Running the Tests
 
 ```
-# From the wealthdesk/ directory:
+# From the wealthdesk/ directory -- run one session at a time:
 pytest s01/tests/ -v
+pytest s02/tests/ -v
+pytest s03/tests/ -v
 
 # Tests do not require a live Groq API key -- the LLM is mocked.
 ```
+
+Note: always run one session's tests at a time. All sessions use a file named
+`main.py`, so running multiple sessions together (e.g. `pytest s01/ s02/`) can
+cause the wrong `main` to be patched. Per-session runs are always correct.
 
 ---
 

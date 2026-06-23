@@ -83,7 +83,7 @@ if groq_key and not groq_key.startswith("your_"):
         from groq import Groq
         client = Groq(api_key=groq_key)
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[{"role": "user", "content": "Reply with exactly: READY"}],
             max_tokens=10,
         )

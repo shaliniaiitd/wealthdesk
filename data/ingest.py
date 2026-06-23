@@ -46,7 +46,6 @@ from typing import List
 
 from dotenv import load_dotenv
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import TextLoader
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
@@ -86,15 +85,13 @@ def load_documents() -> List[Document]:
         sys.exit(1)
 
     for path in md_files:
-        loader = TextLoader(str(path), encoding="utf-8")
-        loaded = loader.load()
-        if not loaded:
-            print(f"  Warning: {path.name} loaded as empty -- skipping", file=sys.stderr)
+        text = path.read_text(encoding="utf-8")
+        if not text.strip():
+            print(f"  Warning: {path.name} is empty -- skipping", file=sys.stderr)
             continue
-        for doc in loaded:
-            doc.metadata["source"] = path.name
-        docs.extend(loaded)
-        print(f"  Loaded: {path.name:40s} ({len(loaded[0].page_content):,} chars)")
+        doc = Document(page_content=text, metadata={"source": path.name})
+        docs.append(doc)
+        print(f"  Loaded: {path.name:40s} ({len(text):,} chars)")
 
     return docs
 

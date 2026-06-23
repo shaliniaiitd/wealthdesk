@@ -33,20 +33,22 @@ if not GROQ_API_KEY:
         "GROQ_API_KEY not found. Check that your .env file exists and contains the key."
     )
 
-MODEL_NAME  = "llama-3.3-70b-versatile"
+MODEL_NAME  = "meta-llama/llama-4-scout-17b-16e-instruct"
 TEMPERATURE = 0.3
 MAX_TOKENS  = 300
 
 # TODO 2 of 5:
-# Write the system prompt for WealthDesk.
-# It should tell the LLM:
-#   - Who WealthDesk is (BNB's banking assistant)
-#   - Which products it knows about (home loan, FD, etc. -- include the rates below)
-#   - Two rules: only discuss BNB products, decline out-of-scope requests politely
-#   - How to sign off: "WealthDesk | Bharat National Bank"
+# Write the system prompt for WealthDesk using the four-component structure:
+#
+#   Persona:          Who WealthDesk is and its tone
+#   Domain knowledge: Products and rates (home loan, FD, etc.) + eligibility formulas
+#   Rules:            What it must always do, never do, and how to handle edge cases
+#   Output format:    Response length limit and sign-off (put this section LAST)
 #
 # Rates to include:
 #   Home Loan 8.5% p.a., Personal Loan 12.0%, FD 1yr 6.8%, FD 2yr 7.1%
+#   Eligibility: Home Loan max = monthly income × 60 (e.g. Rs. 80,000 → Rs. 48,00,000)
+#                Personal Loan max = monthly income × 24
 #
 # Hint: use a triple-quoted string ("""...""") -- see 06_strings_participant.md
 
