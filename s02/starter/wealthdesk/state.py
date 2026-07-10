@@ -12,13 +12,13 @@ from typing import TypedDict
 class WealthDeskState(TypedDict):
     customer_message: str    # the question the customer typed
     response:         str    # the answer WealthDesk will return
-
+    history : list[dict]     # Each dict has two keys:
+                              
     # -----------------------------------------------------------------------
     # TODO 2 of 4 -- Add the history field
     # -----------------------------------------------------------------------
     # Add one more field to track the conversation so far:
-    #
-    #   history : list[dict]
+
     #       Each dict has two keys:
     #           {"role": "user",      "content": "..."}
     #           {"role": "assistant", "content": "..."}
@@ -27,4 +27,4 @@ class WealthDeskState(TypedDict):
     # then append the new turn before returning it.
     #
     # -----------------------------------------------------------------------
-    # TODO: add  history: list[dict]
+    

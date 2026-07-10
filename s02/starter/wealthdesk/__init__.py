@@ -19,3 +19,6 @@ os.environ.setdefault("HF_HUB_VERBOSITY", "error")
 #   load_dotenv()
 #
 # ---------------------------------------------------------------------------
+from dotenv import load_dotenv
+load_dotenv()
+
