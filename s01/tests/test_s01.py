@@ -144,8 +144,6 @@ class TestSystemPrompt:
             or "out-of-scope" in lower
             or "only discuss bnb" in lower
             or "only help with bnb" in lower
-            or "I don't have access" in lower
-            or "I can share" in lower
         )
         assert has_scope_rule
 
