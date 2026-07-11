@@ -121,7 +121,7 @@ class WealthDeskState(TypedDict):
     customer_message: str
     response:         str
     history:          list[dict]
-    # TODO: add query_type field here
+    query_type:       str
 
 
 # ---------------------------------------------------------------------------
@@ -152,33 +152,22 @@ classifier_llm = ChatGroq(
 # ---------------------------------------------------------------------------
 
 def classify(state: WealthDeskState) -> dict:
-    """Classify the customer's question into SIMPLE, COMPLEX, or OUT_OF_SCOPE.
+    """Classify the customer's question into SIMPLE, COMPLEX, or OUT_OF_SCOPE."""
+    messages = [
+        SystemMessage(content=CLASSIFY_SYSTEM),
+        HumanMessage(content=state["customer_message"]),
+    ]
 
-    TODO 2 of 4:
-    1. Build the messages list for the classifier:
-         messages = [
-             SystemMessage(content=CLASSIFY_SYSTEM),
-             HumanMessage(content=state["customer_message"]),
-         ]
-       Note: do NOT include history here. We classify the current question
-       on its own -- not in light of previous turns.
+    try:
+        result = classifier_llm.invoke(messages)
+        query_type = result.content.strip().upper()
+        if query_type not in {"SIMPLE", "COMPLEX", "OUT_OF_SCOPE"}:
+            query_type = "SIMPLE"
+    except Exception as e:
+        print(f"[WealthDesk] Classifier error: {e}")
+        query_type = "SIMPLE"
 
-    2. Call classifier_llm.invoke(messages) inside a try/except.
-       On success:
-         query_type = result.content.strip().upper()
-         if query_type not in {"SIMPLE", "COMPLEX", "OUT_OF_SCOPE"}:
-             query_type = "SIMPLE"   # safe default for unexpected output
-       On exception:
-         print the error
-         query_type = "SIMPLE"       # safe default on failure
-
-    3. Return {"query_type": query_type}
-
-    Note: this node returns only query_type, not response or history.
-    Each node only returns the keys it changed.
-    """
-    # TODO: implement this node
-    pass
+    return {"query_type": query_type}
 
 
 def respond(state: WealthDeskState) -> dict:
@@ -231,21 +220,13 @@ def decline(state: WealthDeskState) -> dict:
 # ---------------------------------------------------------------------------
 
 def route_query(state: WealthDeskState) -> str:
-    """Read query_type from state and return the name of the next node.
-
-    TODO 3 of 4:
-    LangGraph calls this function after classify() runs.
-    The string you return must match an existing node name.
-
-    Logic:
-      if query_type == "COMPLEX":     return "escalate"
-      if query_type == "OUT_OF_SCOPE": return "decline"
-      otherwise:                       return "respond"
-
-    Use state.get("query_type", "SIMPLE") to read the value safely.
-    """
-    # TODO: implement this function
-    pass
+    """Read query_type from state and return the name of the next node."""
+    query_type = state.get("query_type", "SIMPLE")
+    if query_type == "COMPLEX":
+        return "escalate"
+    if query_type == "OUT_OF_SCOPE":
+        return "decline"
+    return "respond"
 
 
 # ---------------------------------------------------------------------------
@@ -253,43 +234,25 @@ def route_query(state: WealthDeskState) -> str:
 # ---------------------------------------------------------------------------
 
 def build_graph(checkpointer=None):
-    """Build and compile the WealthDesk graph with query routing.
+    """Build and compile the WealthDesk graph with query routing."""
+    builder = StateGraph(WealthDeskState)
 
-    TODO 4 of 4:
-    Session 3 graph:
-      START --> classify --> route_query --> {respond | escalate | decline} --> END
+    builder.add_node("classify", classify)
+    builder.add_node("respond", respond)
+    builder.add_node("escalate", escalate)
+    builder.add_node("decline", decline)
 
-    Steps:
-    1. Create the builder:
-         builder = StateGraph(WealthDeskState)
+    builder.set_entry_point("classify")
+    builder.add_conditional_edges("classify", route_query)
+    builder.add_edge("respond", END)
+    builder.add_edge("escalate", END)
+    builder.add_edge("decline", END)
 
-    2. Add all four nodes:
-         builder.add_node("classify", classify)
-         builder.add_node("respond",  respond)
-         builder.add_node("escalate", escalate)
-         builder.add_node("decline",  decline)
+    if checkpointer is None:
+        conn = sqlite3.connect(str(CHECKPOINT_DB), check_same_thread=False)
+        checkpointer = SqliteSaver(conn)
 
-    3. Set the entry point to "classify" (Session 2 used "respond"):
-         builder.set_entry_point("classify")
-
-    4. Add CONDITIONAL edges from "classify" using route_query:
-         builder.add_conditional_edges("classify", route_query)
-       LangGraph will call route_query(state) after classify() runs
-       and route to whichever node the function returns.
-
-    5. Add regular edges from each terminal node to END:
-         builder.add_edge("respond",  END)
-         builder.add_edge("escalate", END)
-         builder.add_edge("decline",  END)
-
-    6. Wire the checkpointer (same as Session 2):
-         if checkpointer is None:
-             conn = sqlite3.connect(str(CHECKPOINT_DB), check_same_thread=False)
-             checkpointer = SqliteSaver(conn)
-         return builder.compile(checkpointer=checkpointer)
-    """
-    # TODO: implement this function
-    pass
+    return builder.compile(checkpointer=checkpointer)
 
 
 # ---------------------------------------------------------------------------
