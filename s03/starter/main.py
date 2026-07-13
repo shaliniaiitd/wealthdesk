@@ -35,7 +35,7 @@ if not GROQ_API_KEY:
         "GROQ_API_KEY not found. Check that your .env file exists and contains the key."
     )
 
-MODEL_NAME  = "meta-llama/llama-4-scout-17b-16e-instruct"
+MODEL_NAME  = "qwen3.6 27B"
 TEMPERATURE = 0.3
 MAX_TOKENS  = 300
 

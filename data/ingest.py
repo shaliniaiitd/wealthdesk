@@ -110,6 +110,31 @@ def split_documents(docs: List[Document]) -> List[Document]:
     )
     return splitter.split_documents(docs)
 
+    """ An alternative splitting approach if :
+    - a longer document ia added later where a section still exceeds ~1000 chars and gets split awkwardly again, or
+    - A section boundary happens to fall mid-sentence/list in some other doc and hurts retrieval precision.
+    
+    def split_documents(docs: List[Document]) -> List[Document]:
+    """Split by markdown headers first (keeps sections like 'Required
+    Documents' intact), then further split any oversized section by
+    character count."""
+    headers_to_split_on = [("#", "h1"), ("##", "h2")]
+    header_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on)
+    char_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
+        length_function=len,
+    )
+
+    all_chunks: List[Document] = []
+    for doc in docs:
+        header_chunks = header_splitter.split_text(doc.page_content)
+        for chunk in header_chunks:
+            chunk.metadata["source"] = doc.metadata["source"]  # re-attach source, header_splitter drops it
+        all_chunks.extend(char_splitter.split_documents(header_chunks))
+    return all_chunks
+    """
+
 
 def main() -> None:
     print("Ingesting BNB documents into ChromaDB")

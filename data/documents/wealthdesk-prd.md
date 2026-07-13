@@ -157,7 +157,7 @@ A pass means all four answers are factually identical. Any variation in amount, 
 - Agent does not confuse messages from different turns
 - A LangGraph SQLite checkpointer persists the conversation across process restarts (so Streamlit reloads do not wipe history in later sessions)
 
-**Test inputs:**
+r**Test inputs:**
 | Input sequence | Expected behaviour |
 |---|---|
 | Turn 1: "My monthly income is 80,000." Turn 2: "What home loan can I get?" | Uses 80,000 to calculate eligibility (Rs. 48,00,000) without asking again |
