@@ -2,7 +2,6 @@ jk85hnbh++++++# WealthDesk -- Product Requirements Document
 ## Agentic AI Engineering, Batch 1, June 2026
 
 **Status:** Draft v2.3
-**Owner:** Ketan (Instructor)
 **Last updated:** June 2026
 
 > **New to these terms?** See [`ai-glossary.md`](../../ai-glossary.md) — it defines every AI and agentic engineering term used here, in the order you will first encounter it during the course.
@@ -13,9 +12,8 @@ jk85hnbh++++++# WealthDesk -- Product Requirements Document
 
 WealthDesk is the AI banking assistant at Bharat National Bank (BNB). It handles customer queries on loans, fixed deposits, and investment products through a conversational interface.
 
-WealthDesk is the in-class build for this course. Every session adds one new capability to the same running system. By Session 15, it is a fully deployed, secured, traced, multi-agent application. Participants build alongside the instructor and observe every architectural decision being made live.
+ Every session adds one new capability to the same running system. By Session 15, it is a fully deployed, secured, traced, multi-agent application. 
 
-The three Launchpad agents (ClinicalIQ, QuickLoan, BundleIQ) implement the same user stories in their own domains. WealthDesk is the reference implementation.
 
 **Two data modalities run through the entire build:**
 - **Structured data (SQLite):** BNB's rate tables, product catalog, branch information. Queried via tool calls. Fast, precise, always current.

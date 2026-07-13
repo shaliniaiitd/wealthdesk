@@ -45,7 +45,7 @@ from pathlib import Path
 from typing import List
 
 from dotenv import load_dotenv
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter, MarkdownHeaderTextSplitter
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
@@ -57,8 +57,8 @@ DOCS_DIR   = DATA_DIR / "documents"
 VECTOR_DIR = DATA_DIR / "vectorstore"
 
 EMBED_MODEL   = "all-MiniLM-L6-v2"
-CHUNK_SIZE    = 500   # characters per chunk
-CHUNK_OVERLAP = 50    # overlap between consecutive chunks
+CHUNK_SIZE    = 1000   # characters per chunk
+CHUNK_OVERLAP = 100   # overlap between consecutive chunks
 
 # Smaller chunks (500 chars) give more precise retrieval but may split context
 # across chunks. 50-char overlap ensures a sentence that straddles a boundary
@@ -99,7 +99,7 @@ def load_documents() -> List[Document]:
 def split_documents(docs: List[Document]) -> List[Document]:
     """Split documents into chunks for retrieval.
 
-    RecursiveCharacterTextSplitter tries to split at paragraph boundaries first,
+    MarkdownHeaderTextSplitter tries to split at paragraph boundaries first,
     then sentence boundaries, then character boundaries. This preserves semantic
     context better than splitting at fixed character positions.
     """
