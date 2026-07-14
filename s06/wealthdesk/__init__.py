@@ -1,5 +1,7 @@
-MOVED TO CONFIG.PY so as to allow run as agent.py and not  as a module run python -m <>wealhdesk.agent
 """
+MOVED TO CONFIG.PY so as to allow running via `python agent.py` directly,
+not only as `python -m wealthdesk.agent`.
+
 WealthDesk package -- US 04:
 ==========================================================
 
