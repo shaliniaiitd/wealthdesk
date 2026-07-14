@@ -257,6 +257,14 @@ r**Test inputs:**
   - **Groundedness** -- answer is traceable to a specific retrieved chunk or tool result, not generated from model memory
   - **Relevance** -- answers the question actually asked, not a related but different question
   - **Refusal quality** -- out-of-scope queries are declined correctly, without hallucinating a plausible-sounding answer
+
+**ADDITIONS -- RAGAS metric layer (added post-baseline, recruiter-alignment amendment):**
+- In addition to the five custom LLM-judge dimensions, RAG-sourced responses (policy/document category, ChromaDB-retrieved) are scored using **RAGAS**'s four reference-free metrics: `faithfulness`, `answer_relevancy`, `context_precision`, `context_recall`, computed via the `ragas` Python library
+- RAGAS scores are logged alongside the custom judge scores in the same LangSmith experiment (`wealthdesk-baseline-eval`), enabling side-by-side comparison of hand-built vs industry-standard scoring
+- RAGAS scores apply only to the `policy_document` category (the only category with a real retrieval step) -- rate/eligibility/out-of-scope categories continue to use the custom 5-dimension judge only
+- Secondary pass thresholds (2026 production-standard, per Section 4 NFR table): `faithfulness >= 0.75`, `context_precision >= 0.70`, `context_recall >= 0.80`
+
+**ADDITIONS -- why both a custom judge and RAGAS:** The custom LLM-judge (5 dimensions, hand-written prompts) teaches judge design, JSON-parsing robustness, and variance-across-runs methodology. RAGAS teaches the industry-standard, reference-free RAG metric suite participants will be asked about in interviews. Building the custom judge first, then adding RAGAS, is intentional sequencing -- understand the mechanism before adopting the library.
 - Eval is run 3 times and results report mean score and variance -- a single-run pass/fail at n=40 is noisy
 - Variance ceiling: if standard deviation across the 3 runs exceeds 8 percentage points, the dataset or judge is unstable -- investigate before treating the mean as a meaningful signal
 - Results are uploaded to LangSmith as a named experiment: `wealthdesk-baseline-eval`
@@ -607,6 +615,8 @@ Supervisor
 
 **Regression gate:**
 - Full eval suite (baseline + trajectory + multi-turn) runs against every code change via a `make eval` command or equivalent pre-merge script
+
+**ADDITIONS -- DeepEval Pytest-native regression gate:** Full eval suite (baseline + trajectory + multi-turn) is additionally implemented as an executable **Pytest suite** using **DeepEval**'s native Pytest integration (`tests/test_golden_dataset.py`, run via `deepeval test run` or plain `pytest`), wrapping the existing custom LLM-judge and RAGAS metrics from US-05 as DeepEval `GEval`/custom metrics. A single `pytest` invocation fails the build if pass rate drops below the 80% threshold -- this is the CI regression gate, runnable locally or wired into GitHub Actions. This supersedes the plain `make eval` script as the primary regression-gate mechanism; `make eval` may remain as a convenience wrapper around `pytest`.
 - If overall pass rate drops below 80%, the change is flagged -- no automated blocking in course context, but instructor reviews before the next session
 - Baseline delta visible in LangSmith experiment comparison view
 
@@ -627,6 +637,7 @@ Supervisor
 | Drift detection | Compare current eval vs US-05 baseline in LangSmith | No dimension dropped more than 5 percentage points |
 | Fairness drift | All 4 fairness probes from US-00 | Identical eligibility answer across all 4 names |
 | Flywheel | Add 3 new cases from a production trace | Eval suite expands, next run includes new cases |
+| **ADDITIONS** -- DeepEval CI gate | `pytest tests/test_golden_dataset.py` after any code change | Exit code 0 if pass rate >= 80%, non-zero otherwise |
 
 **Out of scope:** Automated deployment gates, continuous integration pipeline, A/B testing of agent versions, production traffic (no real customers in Batch 1).
 
@@ -737,6 +748,8 @@ Supervisor
 | Evaluation | LangSmith Evaluations | LLM-as-judge, trajectory, golden dataset, annotation queues |
 | Observability | LangSmith | Project: batch1-wealthdesk |
 | Structured outputs | Pydantic | Response models, tool schemas |
+| **ADDITIONS** -- RAG-specific metrics | RAGAS | faithfulness, answer_relevancy, context_precision, context_recall -- introduced US-05 (S6), reused US-15 (S16) |
+| **ADDITIONS** -- Regression testing | DeepEval (Pytest-native) | Wraps golden dataset as `tests/test_golden_dataset.py`; CI-style gate at US-15 (S16) |
 | UI | Streamlit | Session 12 onwards |
 | Deployment | Docker + Streamlit Community Cloud | Session 13 |
 | Security | OWASP LLM Top 10 + DPDP Act 2023 | Session 14; API key hygiene from Session 1 |
@@ -760,6 +773,7 @@ Supervisor
 - Actual RM notification via email or SMS (HITL shows the approval pattern; notification integration is post-course)
 - Pre-session concept notes, starter repositories, and post-course reference pack (delivery artifacts managed outside this PRD)
 - Second public URL (only WealthDesk is deployed; Launchpad agents run locally)
+- **ADDITIONS** -- TruLens / production monitoring dashboards (RAGAS covers offline experimentation, DeepEval covers CI gating; production tracing continues via LangSmith per US-10 -- a third framework is deliberately out of scope for Batch 1 to avoid tool sprawl)
 
 ---
 
